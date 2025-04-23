@@ -1,0 +1,554 @@
+{
+    "address": "0x4d8E6c20f4E20B80226f031D37Da08F02C473336",
+    "abi": [
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "dedicatedMsgSender",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint64",
+                    "name": "round",
+                    "type": "uint64"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "uint8",
+                    "name": "buildingType",
+                    "type": "uint8"
+                }
+            ],
+            "name": "BuildingRaided",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "previousOwner",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnershipTransferred",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "round",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "bytes",
+                    "name": "data",
+                    "type": "bytes"
+                }
+            ],
+            "name": "RequestedRandomness",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint64",
+                    "name": "round",
+                    "type": "uint64"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "uint64",
+                    "name": "pid",
+                    "type": "uint64"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint64",
+                    "name": "amount",
+                    "type": "uint64"
+                }
+            ],
+            "name": "RewardDistributed",
+            "type": "event"
+        },
+        {
+            "inputs": [],
+            "name": "BUILDING_COUNT",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "TOTAL_PROBABILITY",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint64",
+                    "name": "_round",
+                    "type": "uint64"
+                },
+                {
+                    "components": [
+                        {
+                            "internalType": "uint8",
+                            "name": "buildingType",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "uint64",
+                            "name": "pid",
+                            "type": "uint64"
+                        },
+                        {
+                            "internalType": "uint64",
+                            "name": "amount",
+                            "type": "uint64"
+                        }
+                    ],
+                    "internalType": "struct Hunt.Bet[]",
+                    "name": "_bets",
+                    "type": "tuple[]"
+                },
+                {
+                    "components": [
+                        {
+                            "internalType": "uint8",
+                            "name": "buildingType",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "uint64",
+                            "name": "probability",
+                            "type": "uint64"
+                        }
+                    ],
+                    "internalType": "struct Hunt.Probability[]",
+                    "name": "_probabilities",
+                    "type": "tuple[]"
+                }
+            ],
+            "name": "betting",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "callers",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "randomness",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "bytes",
+                    "name": "dataWithRound",
+                    "type": "bytes"
+                }
+            ],
+            "name": "fulfillRandomness",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint64",
+                    "name": "_round",
+                    "type": "uint64"
+                }
+            ],
+            "name": "getBetInfo",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "uint8",
+                            "name": "buildingType",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "uint64",
+                            "name": "pid",
+                            "type": "uint64"
+                        },
+                        {
+                            "internalType": "uint64",
+                            "name": "amount",
+                            "type": "uint64"
+                        }
+                    ],
+                    "internalType": "struct Hunt.Bet[]",
+                    "name": "bets",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint64",
+                    "name": "_round",
+                    "type": "uint64"
+                }
+            ],
+            "name": "getPrizes",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "uint64",
+                            "name": "playerId",
+                            "type": "uint64"
+                        },
+                        {
+                            "internalType": "uint64",
+                            "name": "totalPrize",
+                            "type": "uint64"
+                        },
+                        {
+                            "internalType": "uint64",
+                            "name": "playerBonus",
+                            "type": "uint64"
+                        }
+                    ],
+                    "internalType": "struct Hunt.Prize[]",
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint64",
+                    "name": "_round",
+                    "type": "uint64"
+                }
+            ],
+            "name": "getRaidedBuilding",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint64",
+                    "name": "_round",
+                    "type": "uint64"
+                }
+            ],
+            "name": "getRandomness",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint64",
+                    "name": "_round",
+                    "type": "uint64"
+                }
+            ],
+            "name": "getResultStr",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "lastRound",
+            "outputs": [
+                {
+                    "internalType": "uint64",
+                    "name": "",
+                    "type": "uint64"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "owner",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "renounceOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "requestPending",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "requestedHash",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint64",
+                    "name": "",
+                    "type": "uint64"
+                }
+            ],
+            "name": "rounds",
+            "outputs": [
+                {
+                    "internalType": "uint64",
+                    "name": "totalAmount",
+                    "type": "uint64"
+                },
+                {
+                    "internalType": "uint8",
+                    "name": "raidedBuilding",
+                    "type": "uint8"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "randomness",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "resultStr",
+                    "type": "string"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "seed",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "addr",
+                    "type": "address"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "enable",
+                    "type": "bool"
+                }
+            ],
+            "name": "setCaller",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint64",
+                    "name": "_round",
+                    "type": "uint64"
+                },
+                {
+                    "components": [
+                        {
+                            "internalType": "uint64",
+                            "name": "playerId",
+                            "type": "uint64"
+                        },
+                        {
+                            "internalType": "uint64",
+                            "name": "totalPrize",
+                            "type": "uint64"
+                        },
+                        {
+                            "internalType": "uint64",
+                            "name": "playerBonus",
+                            "type": "uint64"
+                        }
+                    ],
+                    "internalType": "struct Hunt.Prize[]",
+                    "name": "_prizes",
+                    "type": "tuple[]"
+                }
+            ],
+            "name": "setPrizes",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint64",
+                    "name": "_round",
+                    "type": "uint64"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_resultStr",
+                    "type": "string"
+                }
+            ],
+            "name": "setResultStr",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "transferOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint64",
+                    "name": "_round",
+                    "type": "uint64"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "seed",
+                    "type": "uint256"
+                }
+            ],
+            "name": "updateInfo",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+    ]
+}

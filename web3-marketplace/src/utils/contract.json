@@ -1,0 +1,746 @@
+{
+    "address": "0xC49CDD4095d8Ff03D7e7778525083f2E4a3F7d0C",
+    "abi": [
+        {
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "admin",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "bool",
+                    "name": "added",
+                    "type": "bool"
+                }
+            ],
+            "name": "AdminUpdated",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "enum SupplyChain.NodeType",
+                    "name": "nodeType",
+                    "type": "uint8"
+                }
+            ],
+            "name": "LogisticsAdded",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnershipTransferred",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ProductCreated",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ProductDeleted",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "address",
+                    "name": "buyer",
+                    "type": "address"
+                }
+            ],
+            "name": "ProductPurchased",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "enum SupplyChain.ProductStatus",
+                    "name": "status",
+                    "type": "uint8"
+                }
+            ],
+            "name": "ProductStatusChanged",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "user",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "enum SupplyChain.UserRole",
+                    "name": "role",
+                    "type": "uint8"
+                }
+            ],
+            "name": "UserRegistered",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "user",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "enum SupplyChain.UserRole",
+                    "name": "role",
+                    "type": "uint8"
+                }
+            ],
+            "name": "UserRemoved",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string[]",
+                    "name": "paths",
+                    "type": "string[]"
+                }
+            ],
+            "name": "addLogisticsNode",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "path",
+                    "type": "string"
+                }
+            ],
+            "name": "buyProduct",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "enum SupplyChain.ProductType",
+                            "name": "pType",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "orderNumber",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "brand",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "productionLocation",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "quantity",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "path",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "color",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint8",
+                            "name": "size",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "uint8",
+                            "name": "jewelryMaterial",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "foodExpiry",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "productionDate",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint8",
+                            "name": "foodType",
+                            "type": "uint8"
+                        }
+                    ],
+                    "internalType": "struct SupplyChain.CreateProductParams",
+                    "name": "params",
+                    "type": "tuple"
+                }
+            ],
+            "name": "createProduct",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                }
+            ],
+            "name": "deleteProduct",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getAllBuyers",
+            "outputs": [
+                {
+                    "internalType": "address[]",
+                    "name": "",
+                    "type": "address[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getAllProducts",
+            "outputs": [
+                {
+                    "internalType": "uint256[]",
+                    "name": "",
+                    "type": "uint256[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getAllSellers",
+            "outputs": [
+                {
+                    "internalType": "address[]",
+                    "name": "",
+                    "type": "address[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "buyer",
+                    "type": "address"
+                }
+            ],
+            "name": "getBuyerProducts",
+            "outputs": [
+                {
+                    "internalType": "uint256[]",
+                    "name": "",
+                    "type": "uint256[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getFullLogisticsPath",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "uint256",
+                            "name": "timestamp",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "path",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "enum SupplyChain.NodeType",
+                            "name": "nodeType",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "addedBy",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "bool",
+                            "name": "isBuyer",
+                            "type": "bool"
+                        }
+                    ],
+                    "internalType": "struct SupplyChain.LogisticsNode[]",
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getProductFullInfo",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "enum SupplyChain.ProductType",
+                            "name": "pType",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "brand",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "orderNumber",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "productionLocation",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "quantity",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "issueDate",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "seller",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "enum SupplyChain.ProductStatus",
+                            "name": "status",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "buyer",
+                            "type": "address"
+                        }
+                    ],
+                    "internalType": "struct SupplyChain.ProductBase",
+                    "name": "base",
+                    "type": "tuple"
+                },
+                {
+                    "components": [
+                        {
+                            "internalType": "string",
+                            "name": "color",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "enum SupplyChain.ClothingSize",
+                            "name": "clothingSize",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "enum SupplyChain.JewelryMaterial",
+                            "name": "jewelryMaterial",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "foodExpiry",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "productionDate",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "enum SupplyChain.FoodType",
+                            "name": "foodType",
+                            "type": "uint8"
+                        }
+                    ],
+                    "internalType": "struct SupplyChain.ProductAttributes",
+                    "name": "attrs",
+                    "type": "tuple"
+                },
+                {
+                    "components": [
+                        {
+                            "internalType": "uint256",
+                            "name": "timestamp",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "path",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "enum SupplyChain.NodeType",
+                            "name": "nodeType",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "addedBy",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "bool",
+                            "name": "isBuyer",
+                            "type": "bool"
+                        }
+                    ],
+                    "internalType": "struct SupplyChain.LogisticsNode[]",
+                    "name": "logistics",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getProductStatus",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "seller",
+                    "type": "address"
+                }
+            ],
+            "name": "getSellerProducts",
+            "outputs": [
+                {
+                    "internalType": "uint256[]",
+                    "name": "",
+                    "type": "uint256[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "isAdmin",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                }
+            ],
+            "name": "isFoodExpired",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                }
+            ],
+            "name": "markAsDelivered",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "owner",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "enum SupplyChain.UserRole",
+                    "name": "role",
+                    "type": "uint8"
+                }
+            ],
+            "name": "registerUser",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "adminAddr",
+                    "type": "address"
+                }
+            ],
+            "name": "removeAdmin",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "userAddr",
+                    "type": "address"
+                },
+                {
+                    "internalType": "enum SupplyChain.UserRole",
+                    "name": "role",
+                    "type": "uint8"
+                }
+            ],
+            "name": "removeUser",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "newAdmin",
+                    "type": "address"
+                }
+            ],
+            "name": "setAdmin",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "transferOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "users",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "addr",
+                    "type": "address"
+                },
+                {
+                    "internalType": "enum SupplyChain.UserRole",
+                    "name": "role",
+                    "type": "uint8"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "isActive",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "orderNumber",
+                    "type": "uint256"
+                }
+            ],
+            "name": "validateLogisticsPath",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ]
+}

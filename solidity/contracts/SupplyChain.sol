@@ -1,77 +1,101 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
 contract SupplyChain {
+    using EnumerableSet for EnumerableSet.AddressSet;
+    using EnumerableSet for EnumerableSet.UintSet;
+    // ================== 枚举类型 ==================
+    enum NodeType { Initial, Sold, Intransit, Delivered } //路径类型
+    enum UserRole { Buyer, Seller }                 //用户类型
+    enum ProductType { Clothing, Jewelry, Food }    //商品类型
+    enum ProductStatus { NotSold, InTransit, Delivered }//商品状态
+    enum ClothingSize { S, M, L, XL, XXL }              //衣服尺寸
+    enum JewelryMaterial { Silver, Gold, Diamond }      //珠宝成分
+    enum FoodType { Fruit, Rice, Noodles, Meat }        //食物种类
+
     // ================== 数据结构 ==================
-    enum UserRole { Buyer, Seller }
-    enum ProductType { Clothing, Jewelry, Food }
-    enum ProductStatus { NotSold, InTransit, Delivered }
-    enum JewelryMaterial { Silver, Gold, Diamond }
-    enum FoodType { Fruit, Rice, Noodles, Meat }
-    
+    struct ProductBase {
+        ProductType pType;
+        string brand;
+        uint256 orderNumber;
+        string productionLocation;
+        uint256 quantity;
+        uint256 issueDate;
+        address seller;
+        ProductStatus status;
+        address buyer;
+    }
+
+    struct ProductAttributes {
+        string color;
+        ClothingSize clothingSize;
+        JewelryMaterial jewelryMaterial;
+        uint256 foodExpiry;
+        uint256 productionDate;
+        FoodType foodType;
+    }
+
+    struct LogisticsNode {
+        uint256 timestamp;
+        string path;
+        NodeType nodeType;
+        address addedBy;
+        bool isBuyer;
+    }
+
+    struct Product {
+        ProductBase base;
+        ProductAttributes attrs;
+        bool exists;
+    }
+
     struct User {
         address addr;
         UserRole role;
         bool isActive;
     }
-    
-    struct ProductBase {
-        ProductType pType; // 商品种类
-        address seller; // 卖家地址
-        string brand; // 品牌
-        uint256 orderNumber; // 订单号
-        uint256 issueDate; // 发货日期
-        string productionLocation; // 生产地点
-        uint256 quantity; // 数量 (衣物数量/食物克重/珠宝克重)
-        ProductStatus status; // 商品状态
-        address buyer; // 购买者
-    }
-    
-    struct ProductAttributes {
-        string clothingSize; // 尺寸
-        JewelryMaterial jewelryMaterial; // 珠宝材质
-        uint256 weight; // 克重
-        uint256 foodExpiry; // 食物的保质期（时间戳）
-        uint256 productionDate; // 生产日期（时间戳）
-        FoodType foodType; // 食物类型
-    }
-    
-    struct LogisticsNode {
-        uint256 timestamp;
-        string latitude;  // 新增：拆分经纬度
-        string longitude;
+
+    struct CreateProductParams {
+        ProductType pType; //商品种类
+        uint256 orderNumber;//订单号
+        string brand;//品牌
+        string productionLocation;//生产地
+        uint256 quantity;//数量(克重)
+        string path; //发货地路径
+        string color;//衣服，珠宝颜色
+        uint8 size;// 衣服尺寸
+        uint8 jewelryMaterial;// 新增：珠宝材质枚举值
+        uint256 foodExpiry;//食物保质期
+        uint256 productionDate;//食物生产日期
+        uint8 foodType;// 新增：食物种类枚举值
     }
 
     // ================== 状态变量 ==================
     address public owner;
     mapping(address => User) public users;
-    mapping(uint256 => ProductBase) public products;
-    mapping(uint256 => ProductAttributes) public productAttrs;
-    mapping(uint256 => LogisticsNode[]) logisticsPaths;
-    mapping(address => uint256[]) sellerProducts;
-    mapping(address => uint256[]) buyerProducts;
+    mapping(uint256 => Product) private products;
+    mapping(uint256 => LogisticsNode[]) private logisticsPaths;
+    EnumerableSet.AddressSet private sellers;
+    EnumerableSet.AddressSet private buyers;
+    EnumerableSet.UintSet private allProducts;
+    mapping(address => EnumerableSet.UintSet) private sellerProducts;
+    mapping(address => EnumerableSet.UintSet) private buyerProducts;
     mapping(address => bool) public isAdmin;
-    address[] allSellers;
-    address[] allBuyers;
-    uint256[] productList;
-
-    // 高效数组删除辅助
-    mapping(address => uint256) public sellerIndex;  // 卖家地址 → 在allSellers中的索引
-    mapping(address => uint256) public buyerIndex;   // 买家地址 → 在allBuyers中的索引
 
     // ================== 事件定义 ==================
     event UserRegistered(address indexed user, UserRole role);
-    event UserRoleRemoved(address indexed user, UserRole role);  // 合并事件
+    event UserRemoved(address indexed user, UserRole role);
     event ProductCreated(uint256 indexed orderNumber);
     event ProductDeleted(uint256 indexed orderNumber);
-    event LogisticsAdded(uint256 indexed orderNumber, string latitude, string longitude);
+    event LogisticsAdded(uint256 indexed orderNumber, NodeType nodeType);
     event ProductPurchased(uint256 indexed orderNumber, address buyer);
     event AdminUpdated(address indexed admin, bool added);
     event ProductStatusChanged(uint256 indexed orderNumber, ProductStatus status);
     event OwnershipTransferred(address indexed newOwner);
 
-    // ================== 权限修饰器 ==================
+    // ================== 修饰器 ==================
     modifier onlyOwner() {
         require(msg.sender == owner, "Owner only");
         _;
@@ -98,19 +122,30 @@ contract SupplyChain {
     }
     
     modifier productExists(uint256 orderNumber) {
-        require(products[orderNumber].orderNumber != 0, "Product not exist");
+        require(products[orderNumber].exists, "Product not exist");
         _;
     }
     
     modifier onlyProductSeller(uint256 orderNumber) {
-        require(products[orderNumber].seller == msg.sender, "Not your product");
+        require(products[orderNumber].base.seller == msg.sender, "Not your product");
         _;
     }
 
+    // 路径验证修饰器
+    modifier validLogisticsSequence(uint256 orderNumber) {
+        LogisticsNode[] storage path = logisticsPaths[orderNumber];
+        if (path.length > 0) {
+            require(
+                block.timestamp > path[path.length-1].timestamp,
+                "Timestamp must be increasing"
+            );
+        }
+        _;
+    }
     // ================== 构造函数 ==================
     constructor() {
         owner = msg.sender;
-        isAdmin[owner] = true;  // 初始化管理员权限
+        isAdmin[owner] = true;
         emit AdminUpdated(owner, true);
     }
 
@@ -121,13 +156,10 @@ contract SupplyChain {
         
         users[msg.sender] = User(msg.sender, role, true);
         
-        // 记录全局列表和索引
         if (role == UserRole.Seller) {
-            allSellers.push(msg.sender);
-            sellerIndex[msg.sender] = allSellers.length - 1;
+            sellers.add(msg.sender);
         } else {
-            allBuyers.push(msg.sender);
-            buyerIndex[msg.sender] = allBuyers.length - 1;
+            buyers.add(msg.sender);
         }
         
         emit UserRegistered(msg.sender, role);
@@ -137,151 +169,175 @@ contract SupplyChain {
         require(users[userAddr].isActive, "User not active");
         users[userAddr].isActive = false;
 
-        delete users[userAddr];
-        // 从全局列表中高效删除
         if (role == UserRole.Seller) {
-            uint256 index = sellerIndex[userAddr];
-            address lastSeller = allSellers[allSellers.length - 1];
-            allSellers[index] = lastSeller;
-            sellerIndex[lastSeller] = index;
-            allSellers.pop();
-            delete sellerIndex[userAddr];
+            // 删除卖家所有商品
+            uint256[] memory productList = sellerProducts[userAddr].values();
+            for (uint256 i = 0; i < productList.length; i++) {
+                _deleteProduct(productList[i]);
+            }
+            sellers.remove(userAddr);
         } else {
-            uint256 index = buyerIndex[userAddr];
-            address lastBuyer = allBuyers[allBuyers.length - 1];
-            allBuyers[index] = lastBuyer;
-            buyerIndex[lastBuyer] = index;
-            allBuyers.pop();
-            delete buyerIndex[userAddr];
+            buyers.remove(userAddr);
         }
 
-        // 清理关联数据
-        if (role == UserRole.Seller) {
-            delete sellerProducts[userAddr];
-        } else {
-            delete buyerProducts[userAddr];
-        }
-
-        emit UserRoleRemoved(userAddr, role);
+        emit UserRemoved(userAddr, role);
     }
 
     // ================== 商品管理 ==================
-    function createProduct(
-        ProductType pType, //商品种类
-        uint256 orderNumber, //订单号
-        string memory brand, //品牌
-        string memory productionLocation, //生产地
-        uint256 quantity, //数量
-        string memory specificAttr, // 衣服尺寸
-        uint256 commonAttr, //克重
-        uint8 jewelryMaterial,  // 新增：珠宝材质枚举值
-        uint8 foodType  // 新增：食物种类枚举值
-    ) external onlySeller {
-        require(products[orderNumber].orderNumber == 0, "Product exists");
-        require(commonAttr > 0, "Weight/Expiry must > 0");
-
-        products[orderNumber] = ProductBase({
-            pType: pType,
-            seller: msg.sender,
-            brand: brand,
-            orderNumber: orderNumber,
+    function createProduct(CreateProductParams calldata params) external onlySeller {
+        require(!products[params.orderNumber].exists, "Product exists");
+        require(bytes(params.path).length > 0, "Path cannot be empty");
+        require(params.quantity > 0, "quantity is not");
+        
+        ProductBase memory base = ProductBase({
+            pType: params.pType,
+            brand: params.brand,
+            orderNumber: params.orderNumber,
+            productionLocation: params.productionLocation,
+            quantity: params.quantity,
             issueDate: block.timestamp,
-            productionLocation: productionLocation,
-            quantity: quantity,
+            seller: msg.sender,
             status: ProductStatus.NotSold,
             buyer: address(0)
         });
 
-        // 处理不同商品类型的具体属性
-        if (pType == ProductType.Clothing) {
-            productAttrs[orderNumber].clothingSize = specificAttr;
-            productAttrs[orderNumber].weight = commonAttr;
-        } else if (pType == ProductType.Jewelry) {
-            // 限制珠宝材质必须是合法枚举值
-            require(jewelryMaterial >= uint8(JewelryMaterial.Silver) && jewelryMaterial <= uint8(JewelryMaterial.Diamond), "Invalid jewelry material");
-            productAttrs[orderNumber].jewelryMaterial = JewelryMaterial(jewelryMaterial);
-            productAttrs[orderNumber].weight = commonAttr;
-        } else if (pType == ProductType.Food) {
-            // 限制食物种类必须是合法枚举值
-            require(foodType >= uint8(FoodType.Fruit) && foodType <= uint8(FoodType.Meat), "Invalid food type");
-            productAttrs[orderNumber].foodType = FoodType(foodType);
-            productAttrs[orderNumber].foodExpiry = commonAttr;
+        ProductAttributes memory attrs;
+        if (params.pType == ProductType.Clothing) {
+            attrs.clothingSize = ClothingSize(params.size);
+            attrs.color = params.color;
+        } else if (params.pType == ProductType.Jewelry) {
+            require(params.jewelryMaterial <= uint8(JewelryMaterial.Diamond), "Invalid material");
+            attrs.jewelryMaterial = JewelryMaterial(params.jewelryMaterial);
+            attrs.color = params.color;
+        } else if (params.pType == ProductType.Food) {
+            require(params.foodType <= uint8(FoodType.Meat), "Invalid food type");
+            attrs.foodType = FoodType(params.foodType);
+            attrs.foodExpiry = params.foodExpiry;
+            attrs.productionDate = params.productionDate;
         }
 
-        productList.push(orderNumber);
-        sellerProducts[msg.sender].push(orderNumber);
+        products[params.orderNumber] = Product({
+            base: base,
+            attrs: attrs,
+            exists: true
+        });
+         // 添加初始节点
+        logisticsPaths[params.orderNumber].push(LogisticsNode({
+            timestamp: block.timestamp,
+            path: params.path,
+            nodeType: NodeType.Initial,
+            addedBy: msg.sender,
+            isBuyer: false
+        }));
 
-        emit ProductCreated(orderNumber);
+        allProducts.add(params.orderNumber);
+        sellerProducts[msg.sender].add(params.orderNumber);
+
+        emit LogisticsAdded(params.orderNumber, NodeType.Initial); // 修改事件触发
+        emit ProductCreated(params.orderNumber);
     }
 
     function deleteProduct(uint256 orderNumber) external onlyAdmin productExists(orderNumber) {
-        address seller = products[orderNumber].seller;
-        
-        // 从卖家商品列表删除
-        uint256[] storage orders = sellerProducts[seller];
-        for (uint256 i = 0; i < orders.length; i++) {
-            if (orders[i] == orderNumber) {
-                orders[i] = orders[orders.length - 1];
-                orders.pop();
-                break;
-            }
-        }
-
-        // 从全局列表删除
-        for (uint256 i = 0; i < productList.length; i++) {
-            if (productList[i] == orderNumber) {
-                productList[i] = productList[productList.length - 1];
-                productList.pop();
-                break;
-            }
-        }
-
-        delete products[orderNumber];
-        delete productAttrs[orderNumber];
-        delete logisticsPaths[orderNumber];
-
+        _deleteProduct(orderNumber);
         emit ProductDeleted(orderNumber);
     }
 
+    function _deleteProduct(uint256 orderNumber) private {
+        Product storage product = products[orderNumber];
+        require(product.exists, "Product not exist");
+
+        // 清理关联数据
+        sellerProducts[product.base.seller].remove(orderNumber);
+        if (product.base.buyer != address(0)) {
+            buyerProducts[product.base.buyer].remove(orderNumber);
+        }
+        allProducts.remove(orderNumber);
+
+        delete products[orderNumber];
+    }
+
     // ================== 交易与物流 ==================
-    function buyProduct(uint256 orderNumber) external onlyBuyer productExists(orderNumber) {
-        ProductBase storage product = products[orderNumber];
-        require(product.status == ProductStatus.NotSold, "Already sold");
-        require(product.buyer == address(0), "Buyer exists");
+    function buyProduct(uint256 orderNumber, string memory path) external onlyBuyer productExists(orderNumber) {
+        Product storage product = products[orderNumber];
+        require(product.base.status == ProductStatus.NotSold, "Already sold");
+        require(logisticsPaths[orderNumber].length == 1, "Missing initial node");
+        require(bytes(path).length > 0, "Path cannot be empty");
 
-        product.buyer = msg.sender;
-        product.status = ProductStatus.InTransit;
-        buyerProducts[msg.sender].push(orderNumber);
+        product.base.buyer = msg.sender;
+        product.base.status = ProductStatus.InTransit;
+        buyerProducts[msg.sender].add(orderNumber);
 
+         logisticsPaths[orderNumber].push(LogisticsNode({
+            timestamp: block.timestamp,
+            path: path,
+            nodeType: NodeType.Sold,   // 设置最终类型
+            addedBy: msg.sender,          // 记录买家地址
+            isBuyer: true
+        }));
+
+        emit LogisticsAdded(orderNumber, NodeType.Sold); 
         emit ProductPurchased(orderNumber, msg.sender);
         emit ProductStatusChanged(orderNumber, ProductStatus.InTransit);
     }
 
     function addLogisticsNode(
         uint256 orderNumber,
-        string memory latitude,
-        string memory longitude
-    ) external onlyAdmin productExists(orderNumber) {
-        logisticsPaths[orderNumber].push(LogisticsNode(
-            block.timestamp,
-            latitude,
-            longitude
-        ));
-        emit LogisticsAdded(orderNumber, latitude, longitude);
+        string[] memory paths
+    ) external onlyAdmin productExists(orderNumber) validLogisticsSequence(orderNumber) {
+        Product storage product = products[orderNumber];
+        require(product.base.status == ProductStatus.InTransit, "Not in transit");
+        require(logisticsPaths[orderNumber].length >= 2, "Missing base nodes");
+
+        LogisticsNode[] storage pathChain = logisticsPaths[orderNumber];
+
+        uint256 lastTimestamp = pathChain.length > 0 ? 
+            pathChain[pathChain.length - 1].timestamp : block.timestamp;
+
+        // 遍历路径，依次插入
+        for (uint256 i = 0; i < paths.length; i++) {
+            pathChain.push(LogisticsNode({
+                timestamp: lastTimestamp + 1,  // 保证时间递增
+                path: paths[i],
+                nodeType: NodeType.Intransit,  // 中间节点
+                addedBy: msg.sender,
+                isBuyer: false
+            }));
+
+            lastTimestamp++;  // 更新时间戳
+        }
+
+        emit LogisticsAdded(orderNumber, NodeType.Intransit); 
     }
 
-    function getLogisticsPath(uint256 orderNumber) external view returns (LogisticsNode[] memory path) {
-        path = logisticsPaths[orderNumber];
+    // 路径验证函数
+    function validateLogisticsPath(uint256 orderNumber) public view returns (bool) {
+        LogisticsNode[] storage path = logisticsPaths[orderNumber];
+        if (path.length < 2) return false;
+        
+        // 验证首尾节点类型
+        if (path[0].nodeType != NodeType.Intransit || 
+            path[path.length-1].nodeType != NodeType.Delivered) {
+            return false;
+        }
+
+        // 验证时间顺序
+        for (uint i = 1; i < path.length; i++) {
+            if (path[i].timestamp <= path[i-1].timestamp) return false;
+        }
+        
+        return true;
     }
 
     function markAsDelivered(uint256 orderNumber) external onlyAdmin productExists(orderNumber) {
-        ProductBase storage product = products[orderNumber];
-        require(product.status == ProductStatus.InTransit, "Not in transit");
-        product.status = ProductStatus.Delivered;
+        // require(validateLogisticsPath(orderNumber), "Invalid logistics path");//模拟真实时间顺序，但前端展示效果会慢，因此先屏蔽，后续根据接入模拟
+        Product storage product = products[orderNumber];
+        require(product.base.status == ProductStatus.InTransit);
+        
+        product.base.status = ProductStatus.Delivered;
         emit ProductStatusChanged(orderNumber, ProductStatus.Delivered);
     }
 
-    // ================== 管理员权限 ==================
+    // ================== 管理员功能 ==================
     function setAdmin(address newAdmin) external onlyOwner {
         require(!isAdmin[newAdmin], "Already admin");
         isAdmin[newAdmin] = true;
@@ -301,46 +357,47 @@ contract SupplyChain {
     }
 
     // ================== 查询接口 ==================
-    // 判断食物是否过期
-    function isFoodExpired(uint256 orderNumber) public view returns (bool) {
-        ProductAttributes memory attributes = productAttrs[orderNumber];
-        ProductBase memory product = products[orderNumber];
-        require(product.pType == ProductType.Food, "Not food product");
-
-        return block.timestamp > (attributes.productionDate + attributes.foodExpiry);
-    }
-
-    function getProductFullInfo(uint256 orderNumber) external view returns (
+    function getProductFullInfo(uint256 orderNumber) external view productExists(orderNumber) returns (
         ProductBase memory base,
         ProductAttributes memory attrs,
-        LogisticsNode[] memory path
+        LogisticsNode[] memory logistics
     ) {
-        base = products[orderNumber];
-        attrs = productAttrs[orderNumber];
-        path = logisticsPaths[orderNumber];
+        Product storage product = products[orderNumber];
+        return (product.base, product.attrs, logisticsPaths[orderNumber]);
+    }
+
+    function isFoodExpired(uint256 orderNumber) public view returns (bool) {
+        Product storage product = products[orderNumber];
+        require(product.base.pType == ProductType.Food, "Not food");
+        return block.timestamp > (product.attrs.productionDate + product.attrs.foodExpiry);
+    }
+
+    // 批量获取函数
+    function getAllProducts() external view returns (uint256[] memory) {
+        return allProducts.values();
     }
 
     function getSellerProducts(address seller) external view returns (uint256[] memory) {
-        return sellerProducts[seller];
+        return sellerProducts[seller].values();
     }
 
     function getBuyerProducts(address buyer) external view returns (uint256[] memory) {
-        return buyerProducts[buyer];
+        return buyerProducts[buyer].values();
     }
 
     function getAllSellers() external view returns (address[] memory) {
-        return allSellers;
+        return sellers.values();
     }
 
     function getAllBuyers() external view returns (address[] memory) {
-        return allBuyers;
-    }
-
-    function getAllProducts() external view returns (uint256[] memory) {
-        return productList;
+        return buyers.values();
     }
 
     function getProductStatus(uint256 orderNumber) external view returns (uint) {
-        return uint(products[orderNumber].status);
+        return uint(products[orderNumber].base.status);
+    }
+    // 获取完整路径函数
+    function getFullLogisticsPath(uint256 orderNumber) external view returns (LogisticsNode[] memory) {
+        return logisticsPaths[orderNumber];
     }
 }
