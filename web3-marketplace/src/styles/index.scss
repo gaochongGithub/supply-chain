@@ -7,6 +7,7 @@
 
 body {
   height: 100%;
+  margin: 0 !important;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -20,10 +21,12 @@ label {
 html {
   height: 100%;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 #app {
   height: 100%;
+  background-color: #ecf0f4;
 }
 
 *,
@@ -121,7 +124,12 @@ aside {
 
 //main-container全局样式
 .app-container {
-  padding: 20px;
+  box-sizing: border-box;
+  margin: 15px 10px; /* 你需要的 margin */
+  padding: 20px 0;
+  background-color: #feffff;
+  height: calc(100% - 30px); /* 高度 = 100% 减去上下 margin */
+  overflow: auto; /* 如果内部内容超出，容器内部滚动 */
 }
 
 .components-container {
@@ -172,6 +180,8 @@ aside {
 }
 
 .filter-container {
+  // 
+  padding: 0px 20px;
   padding-bottom: 10px;
 
   .filter-item {

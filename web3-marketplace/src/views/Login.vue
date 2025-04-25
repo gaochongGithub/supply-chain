@@ -1,7 +1,7 @@
 <template>
     <div class="login-container">
       <el-form class="login-form" autocomplete="on" label-position="left">
-    
+        <!-- background-color: #6548ae;border:none -->
         <!-- 登录按钮 -->
         <el-button v-if="isConnect" 
                    :loading="loading" 
@@ -52,7 +52,7 @@
                   this.getUserRole()
               }
             } catch (error) {
-              console.log(error, "快快快")
+              console.log(error)
             }
         },
         // 处理登录按钮点击事件
@@ -62,7 +62,8 @@
                 // 连接钱包
                 const account = await connectWallet();
                 this.userAccount = account;  // 存储钱包地址
-                localStorage.setItem('userToken', account); // 添加这行
+                localStorage.setItem('userAddress', account); // 添加这行
+                this.$store.commit('user/setAccount', account)
                 this.getUserRole()
                 this.isConnect = false
                 this.loading = false;
@@ -76,22 +77,25 @@
 
         async getUserRole () {
             const admin = await get("isAdmin", [this.userAccount]);
-
+          console.log(admin, "是否为Admin====")
             if(admin){
-                this.$store.commit('user/setRole', 2)
+                console.log("跳转啊============")
                 this.$router.push('/admin');
+                this.$store.commit('user/setRole', 2)
                 return;
             }
             const user = await get("users", [this.userAccount]);
+            console.log(user, "用户信息====")
             if(user && user.addr == this.userAccount && user.isActive) {
               this.$store.commit('user/setRole', user.role)
                 if(user.role == 0){
+                  this.$router.push('/buyer');
                   this.$store.commit('user/setRole', 0)
-                    this.$router.push('/buyer');
+              
                 }else if(user.role == 1){
+                  this.$router.push('/seller');
                   this.$store.commit('user/setRole', 1)
-                  // this.$router.push({ name: 'ProductDetail', params: { id: 12345 } });
-                    this.$router.push('/seller');
+                  // this.$router.push({ name: 'ProductDetail', params: { id: 12345 } }); 
                 }  
             }
         },

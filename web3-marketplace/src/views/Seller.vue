@@ -1,75 +1,85 @@
 <template>
   <div class="app-container">
-    <div class="filter-container" style="display: flex; justify-content: flex-end;">
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
-        Add
-      </el-button>
+    <div class="filter-container" style="display: flex; justify-content: space-between; align-items: center;">
+      <div class="filter-label" style="color: #5a5e66; margin-right: 10px; font-size: 20px; display: flex; padding-bottom: 6px; align-items: center;">
+        Seller
+      </div>
+      
+      <div class="right-menu">
+        <el-select v-model="statusOptions" placeholder="Status" clearable style="width: 190px; margin-left: 20px; margin-right: 10px" class="filter-item" @change="handleStatusOptions">
+          <el-option v-for="item in statusOptionsMap" :key="item" :label="item" :value="item" />
+        </el-select>
+        <el-button class="filter-item" style="margin-left: 10px; background-color: #6548ae; border:none" type="primary" icon="el-icon-edit" @click="handleCreate">
+          Add
+        </el-button>
+      </div>
+      
     </div>
     
-    <Product ref="productRef" :productsMethod="productsMethod" :params="this.$store.state.user.account"/>
+    <Product ref="productRef" :productsMethod="productsMethod" :params="this.$store.state.user.account" />
 
     <el-dialog v-loading="listLoading" :title="textMap[dialogStatus]" @close="handleDialogClose" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 400px; margin-left:50px;">
 
         <!-- 商品种类 -->
         <el-form-item label="pType" prop="pType">
-          <el-select v-model="temp.pType" class="filter-item" placeholder="Please select">
+          <el-select v-model="temp.pType" class="filter-item" style="width: 100%;" placeholder="Please select">
             <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
         </el-form-item>
 
         <!-- 品牌 -->
         <el-form-item label="Brand" prop="brand">
-          <el-input v-model="temp.brand" />
+          <el-input v-model="temp.brand" placeholder="Please enter the brand" />
         </el-form-item>
 
         <!-- 生产地 -->
         <el-form-item label="PLocation" prop="productionLocation">
-            <el-input v-model="temp.productionLocation" />
+            <el-input v-model="temp.productionLocation" placeholder="Please enter the generation address" />
         </el-form-item>
 
         <!-- 数量 -->
         <el-form-item label="Quantity" prop="quantity">
-            <el-input v-model="temp.quantity" />
+            <el-input v-model="temp.quantity" placeholder="Please enter the quantity" />
         </el-form-item>
 
         <!-- 发货地 -->
         <el-form-item label="Path" prop="path">
-          <el-input v-model="temp.path" @blur="updateLocation" />
+          <el-input v-model="temp.path" @blur="updateLocation" placeholder="Please enter the shipping address" />
         </el-form-item>
 
          <!-- 颜色 -->
          <el-form-item v-if="isClothing || isMaterial" label="Color" prop="color">
-            <el-input v-model="temp.color" />
+            <el-input v-model="temp.color" placeholder="Please enter the color" />
           </el-form-item>
 
           <!-- 衣服尺寸 -->
           <el-form-item v-if="isClothing" label="Size" prop="size">
-            <el-select v-model="temp.size" class="filter-item" placeholder="Please select">
+            <el-select v-model="temp.size" class="filter-item" style="width: 100%;" placeholder="Please select">
               <el-option v-for="item in clothingSize" :key="item.key" :label="item.display_name" :value="item.key" />
             </el-select>
           </el-form-item>
 
           <!-- 珠宝材质 -->
           <el-form-item v-if="isMaterial" label="JewelryMaterial" prop="jewelryMaterial">
-            <el-select v-model="temp.jewelryMaterial" class="filter-item" placeholder="Please select">
+            <el-select v-model="temp.jewelryMaterial" class="filter-item" style="width: 100%;" placeholder="Please select">
               <el-option v-for="item in jewelryMaterial" :key="item.key" :label="item.display_name" :value="item.key" />
             </el-select>
           </el-form-item>
 
           <!-- 食物保质期 -->
           <el-form-item v-if="isFood" label="FoodExpiry" prop="foodExpiry">
-            <el-date-picker v-model="temp.foodExpiry" value-format="timestamp" :default-value="new Date()" type="datetime" placeholder="Please pick a date" />
+            <el-date-picker v-model="temp.foodExpiry" value-format="timestamp" style="width: 100%;" :default-value="new Date()" type="datetime" placeholder="Please pick a date" />
           </el-form-item>
 
           <!-- 食物生产日期 -->
           <el-form-item v-if="isFood" label="ProductDate" prop="productionDate">
-            <el-date-picker v-model="temp.productionDate" value-format="timestamp" :default-value="new Date()" type="datetime" placeholder="Please pick a date" />
+            <el-date-picker v-model="temp.productionDate" value-format="timestamp" style="width: 100%;" :default-value="new Date()" type="datetime" placeholder="Please pick a date" />
           </el-form-item>
 
           <!-- 食物种类 -->
           <el-form-item v-if="isFood" label="FoodType" prop="foodType">
-            <el-select v-model="temp.foodType" class="filter-item" placeholder="Please select">
+            <el-select v-model="temp.foodType" class="filter-item" style="width: 100%;" placeholder="Please select">
               <el-option v-for="item in foodType" :key="item.key" :label="item.display_name" :value="item.key" />
             </el-select>
           </el-form-item>
@@ -77,19 +87,10 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="createData()">Confirm</el-button>
+        <el-button style="background-color: #6548ae; border:none;color: #feffff;" @click="createData()">Confirm</el-button>
       </div>
     </el-dialog>
 
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel" />
-        <el-table-column prop="pv" label="Pv" />
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">Confirm</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
@@ -166,6 +167,8 @@ export default {
       isClothing: true,
       isMaterial: false,
       isFood: false,
+      statusOptions: 'All Product',
+      statusOptionsMap: ["All Product", "Not Sold", "Sold"],
       temp: {
         pType: 0, //商品种类
         orderNumber: 0, //订单号
@@ -326,9 +329,37 @@ export default {
 
     handleDialogClose() {
       // this.$refs.dataForm.resetFields();
-      this.resetFormData()
+      this.resetFormData();
+      this.resetFormValidate();
+      this.closeAllPopper();
     },
-
+    closeAllPopper() {
+      // 关闭所有Element UI弹出层
+      document.body.click() // 触发全局点击关闭所有popper
+      this.$nextTick(() => {
+        // 强制清除残留的popper元素
+        const poppers = document.querySelectorAll('.el-popper')
+        poppers.forEach(p => p.parentNode?.removeChild(p))
+      })
+    },
+    resetFormValidate() {
+      this.$refs.dataForm?.clearValidate()
+      // 强制重置所有验证状态
+      const errorMessages = document.querySelectorAll('.el-form-item__error')
+      errorMessages.forEach(msg => msg.style.display = 'none')
+    },
+    handleStatusOptions(newValue){
+      this.statusOptions = newValue;
+      let status = -1
+      if(newValue == this.statusOptionsMap[0]){
+        status = -1
+      }else if(newValue == this.statusOptionsMap[1]){
+        status = 0
+      }else{
+        status = 1
+      }
+      this.$refs.productRef.updateProductList(status);
+    },
 
   }
 }

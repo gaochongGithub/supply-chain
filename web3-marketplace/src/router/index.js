@@ -16,7 +16,7 @@ const router = new VueRouter({
 
 // 简单路由守卫（后续可扩展权限校验）
 router.beforeEach((to, from, next) => {
-  const isLoggedIn = !!localStorage.getItem('userToken')
+  const isLoggedIn = !!localStorage.getItem('userAddress')
   
   if (!to.meta.public && !isLoggedIn) {
     return next('/login')

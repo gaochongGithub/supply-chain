@@ -1,7 +1,9 @@
 <template>
     
     <div class="product-detail" style="padding: 20px;">
-      <el-button @click="goBack">Back</el-button>
+      <el-button @click="goBack" style="width: 40px; height: 40px; padding: 0; border: none;background: none;">
+        <img src="@/assets/back.png" alt="Back" style="width: 100%; height: 100%;">
+      </el-button>
       <!-- 商品信息区块 -->
       <div class="product-info" style="margin-bottom: 10px; padding: 10px; border: 1px solid #eee;">
         <h2>Product Details</h2>
@@ -39,7 +41,7 @@
         <LogisticsMap 
           :product-data="{
             pointArray: product.pointArray,
-            logistics: product.logistics
+            product: product
           }"
         />
       </div>

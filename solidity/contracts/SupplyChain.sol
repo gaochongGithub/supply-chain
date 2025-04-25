@@ -55,6 +55,7 @@ contract SupplyChain {
         address addr;
         UserRole role;
         bool isActive;
+        uint256 time;
     }
 
     struct CreateProductParams {
@@ -154,7 +155,7 @@ contract SupplyChain {
         require(!users[msg.sender].isActive, "User exists");
         require(role == UserRole.Buyer || role == UserRole.Seller, "Invalid role");
         
-        users[msg.sender] = User(msg.sender, role, true);
+        users[msg.sender] = User(msg.sender, role, true, block.timestamp);
         
         if (role == UserRole.Seller) {
             sellers.add(msg.sender);

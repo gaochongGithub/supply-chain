@@ -1,18 +1,32 @@
 <template>
-    <div class="tab-container">
-      <el-tabs v-model="activeName" style="margin-top:15px;" type="border-card">
-        <el-tab-pane v-for="item in tabMapOptions" :key="item.key" :label="item.label" :name="item.key">
-          <keep-alive>
-            
-          </keep-alive>
-        </el-tab-pane>
-        <tab-pane 
-              v-if="activeName == 'Buyer' || activeName == 'Seller' " 
-              ref="userList"
-              :userMethod="userMethod"  />
+    <div class="app-container">
+      <div class="filter-container" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="filter-label" style="color: #5a5e66; margin-right: 10px; font-size: 20px; display: flex; padding-bottom: 6px; align-items: center;">
+          Admin
+        </div>
+        
+        <div class="right-menu">
+          <!-- <el-select placeholder="Imp" clearable style="width: 190px; margin-left: 20px; margin-right: 10px" class="filter-item">
+            <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
+          </el-select> -->
+        </div>
+        
+      </div>
+       <div class="admin-list">
+        <el-tabs v-model="activeName" style="margin-top:0px;" type="border-card">
+          <el-tab-pane v-for="item in tabMapOptions" :key="item.key" :label="item.label" :name="item.key">
+            <keep-alive>
+              
+            </keep-alive>
+          </el-tab-pane>
+          <tab-pane 
+                v-show="activeName == 'Buyer' || activeName == 'Seller'" 
+                ref="userList"
+                :userMethod="userMethod"  />
 
-        <Product v-if="activeName === 'Product'" ref="productRef" :productsMethod="productsMethod" :params="params"/>
-      </el-tabs>
+          <Product v-show="activeName === 'Product'" ref="productRef" :productsMethod="productsMethod" :params="params"/>
+        </el-tabs>
+      </div>
     </div>
   </template>
   
@@ -22,7 +36,7 @@
   
   export default {
     name: 'Tab',
-    components: { TabPane, Product },
+    components: { TabPane, Product },//TabPane, Product
     data() {
       return {
         productsMethod: 'getAllProducts',
@@ -77,10 +91,13 @@
         }
         if(this.activeName !== 'Product'){
           console.log(this.userMethod, "Admin页面====")
-          // this.$refs.userList.getUserList();
           this.$nextTick(() => {
-            this.$refs.userList.getUserList();
+
+            if (this.$refs.userList) {
+              this.$refs.userList.getUserList();
+            }
           });
+          
         }
         
     }
@@ -88,9 +105,22 @@
   }
   </script>
   
-  <style scoped>
+  <style>
+  .el-tabs--border-card {
+    background: #feffff;
+    border: none;
+    box-shadow: none;
+  }
+  .el-tabs--border-card > .el-tabs__header {
+    background: #feffff;
+    border-bottom: none;
+  }
+  .el-tabs--border-card > .el-tabs__content {
+    padding: 0px;
+    padding-top: 10px;
+  }
     .tab-container {
-      margin: 30px;
+      margin: 10px;
     }
   </style>
   

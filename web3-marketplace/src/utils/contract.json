@@ -1,5 +1,5 @@
 {
-    "address": "0xC49CDD4095d8Ff03D7e7778525083f2E4a3F7d0C",
+    "address": "0x5C744167d06aba3a5d39E88C1246dDb2cA53e11F",
     "abi": [
         {
             "inputs": [],
@@ -718,6 +718,11 @@
                     "internalType": "bool",
                     "name": "isActive",
                     "type": "bool"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "time",
+                    "type": "uint256"
                 }
             ],
             "stateMutability": "view",

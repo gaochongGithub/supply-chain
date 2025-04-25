@@ -22,7 +22,6 @@ export async function geocode(address) {
     const result = response.data[0];
     const lat = parseFloat(result.lat);
     const lon = parseFloat(result.lon);
-    console.log(result, "返回结果")
     // 经度和纬度有效性检查：确保在合理的范围内
     if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
       return []

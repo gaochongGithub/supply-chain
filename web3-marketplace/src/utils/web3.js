@@ -2,6 +2,7 @@ import { ethers } from 'ethers'
 // import contract from './hunt.json';  // 根据你的文件路径修改
 import contract from './contract.json';  // 根据你的文件路径修改
 import store from '@/store'
+import router from '@/router'
 
 // 获取合约实例 (缓存合约实例)
 let cachedContract = null;
@@ -16,8 +17,12 @@ const BSC_CHAIN_ID = '0x61'
 export const initWalletListeners = (store) => {
     if (window.ethereum) {
         window.ethereum.on('accountsChanged', (accounts) => {
-            console.log("监听地址变化--=-======", accounts)
+            if(accounts.length == 0){
+              router.push('/login');
+              store.commit('user/setRole', '')
+            }
             store.commit('user/setAccount', accounts[0] || '')
+            
         })
 
         window.ethereum.on('chainChanged', (chainId) => {
@@ -82,6 +87,7 @@ export const checkWallet = async () => {
             // const account = accounts[0];
             // console.log("钱包已连接:", account);
             store.commit('user/setAccount', accounts[0] || '')
+            localStorage.setItem('userAddress', accounts[0]); // 添加这行
             return accounts;
         }
 
