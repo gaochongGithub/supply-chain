@@ -123,12 +123,9 @@ export const getContract = () => {
 }
 
 // 修改链上数据的方法
-export const send = async (methodName, params, isLoading) => {
+export const send = async (methodName, params) => {
     if (!window.ethereum) {
         return { success: false, error: "Ethereum provider not found" };
-    }
-    if(isLoading){
-        console.log("过度动画")
     }
     //  设置加载状态为 true
 //   if (isLoading) isLoadingSetter(true);

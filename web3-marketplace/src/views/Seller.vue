@@ -13,7 +13,6 @@
           Add
         </el-button>
       </div>
-      
     </div>
     
     <Product ref="productRef" :productsMethod="productsMethod" :params="this.$store.state.user.account" />
