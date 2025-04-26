@@ -16,7 +16,6 @@ export default {
   },
   computed: {
     showNavbar() {
-      console.log(this.$route.name, "展示页面=====")
       let isNav = true;
       if(this.$route.name == 'Login' || this.$route.name == 'ProductDetail'){
         isNav = false

@@ -51,6 +51,11 @@
         createdTimes: 0,
       }
     },
+    computed: {
+        isButtonClicking() {
+          return this.$store.state.user.isButtonClicking
+        },
+    },
     watch: {
       activeName(val) {
   
@@ -66,7 +71,14 @@
           });
           // this.userMethod = val
         }
-      }
+      },
+       // 监听 isButtonClicking 状态的变化
+      'isButtonClicking'(newValue) {
+        if (newValue) {
+          console.log("触发点击====")
+          this.exportToExcel()
+        }
+      },
     },
     created() {
       // init the default selected tab
@@ -98,8 +110,26 @@
             }
           });
           
+        }else{
+          this.$nextTick(() => {
+
+            if (this.$refs.productRef) {
+              this.$refs.productRef.getProductList();
+            }
+          });
         }
         
+    },
+    exportToExcel(){
+      if(this.activeName == 'Product'){
+          if (this.$refs.productRef) {
+            this.$refs.productRef.exportToExcel();
+          }
+      }else{
+        if (this.$refs.userList) {
+            this.$refs.userList.exportToExcel();
+        }
+      }
     }
     }
   }

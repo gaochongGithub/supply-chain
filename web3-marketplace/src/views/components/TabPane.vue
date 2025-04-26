@@ -62,10 +62,10 @@ export default {
       },
   },
   computed: {
-      isButtonClicking() {
-        return this.$store.state.user.isButtonClicking
-      },
-    },
+      // isButtonClicking() {
+      //   return this.$store.state.user.isButtonClicking
+      // },
+  },
   data() {
     return {
       userList: [],
@@ -83,7 +83,6 @@ export default {
   watch: {
       // 监听 props 变化，更新商品列表
       userMethod(newVal) {
-        console.log(newVal, "TabPane Watch监听======")
         
         if (this.userMethod !== newVal) {
           this.getUserList();
@@ -91,11 +90,12 @@ export default {
         }
       },
        // 监听 isButtonClicking 状态的变化
-      'isButtonClicking'(newValue) {
-        if (newValue) {
-          this.exportToExcel()
-        }
-      },
+      // 'isButtonClicking'(newValue) {
+      //   if (newValue) {
+          
+      //     this.exportToExcel()
+      //   }
+      // },
   },
   created() {
     
@@ -103,6 +103,7 @@ export default {
 
   methods: {
     async getUserList() {
+      console.log("更新用户信息---")
       this.listLoading = true;
       this.userList = [];
       let userList = await get(this.userMethod,[]);
@@ -119,7 +120,7 @@ export default {
     async handleDelete(row) {
       
       try {
-        this.loading = true;
+        this.listLoading = true;
         await send("removeUser", [row.addr, row.role])
         this.getUserList();
         

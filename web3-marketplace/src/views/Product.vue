@@ -225,7 +225,7 @@
       'isButtonClicking'(newValue) {
         if (newValue) {
           // 状态变为 'true'，执行某些操作
-          console.log('Button is being processed...')
+          console.log('产品信息下载============')
           this.exportToExcel()
         }
       },
@@ -239,6 +239,7 @@
     },
     methods: {
       async getProductList() {
+        console.log("更新用户信息---1111111111111111")
         this.listLoading = true
         let productList;
         if(this.productsMethod == 'getAllProducts'){
@@ -297,7 +298,6 @@
     filterProductsBuyer(status){
       let addr = localStorage.getItem('userAddress'); // 添加这行
       let address = this.$store.state.user.address == null ? addr : this.$store.state.user.address;
-      console.log(address, "当前地址=-=====")
       switch (status) {
             case 0:
               return this.originalProductList;
