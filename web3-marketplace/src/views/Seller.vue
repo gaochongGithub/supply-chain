@@ -22,7 +22,7 @@
 
         <!-- 商品种类 -->
         <el-form-item label="pType" prop="pType">
-          <el-select v-model="temp.pType" class="filter-item" style="width: 100%;" placeholder="Please select">
+          <el-select v-model="temp.pType" class="filter-item" style="width: 100%;" placeholder="Please select" @change="handleTypeChange">
             <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
         </el-form-item>
@@ -289,9 +289,10 @@ export default {
       }
     },
     async createData() {
-      this.listLoading = true;
+      
       this.$refs['dataForm'].validate(async (valid) => {
         if (valid) {
+          this.listLoading = true;
           this.temp.orderNumber = generateOrderId();
           if(this.temp.orderNumber == 0){
             return this.$message.error('Order Number is error ')
@@ -359,6 +360,11 @@ export default {
       }
       this.$refs.productRef.updateProductList(status);
     },
+    handleTypeChange(){
+      this.$nextTick(() => {
+        this.$refs.dataForm.clearValidate()
+      })
+    }
 
   }
 }

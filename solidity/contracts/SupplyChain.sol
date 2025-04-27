@@ -16,6 +16,7 @@ contract SupplyChain {
     enum FoodType { Fruit, Rice, Noodles, Meat }        //食物种类
 
     // ================== 数据结构 ==================
+    // 商品基础信息
     struct ProductBase {
         ProductType pType;
         string brand;
@@ -27,7 +28,7 @@ contract SupplyChain {
         ProductStatus status;
         address buyer;
     }
-
+    // 商品特殊信息
     struct ProductAttributes {
         string color;
         ClothingSize clothingSize;
@@ -36,7 +37,7 @@ contract SupplyChain {
         uint256 productionDate;
         FoodType foodType;
     }
-
+    // 商品路径信息
     struct LogisticsNode {
         uint256 timestamp;
         string path;
@@ -50,14 +51,14 @@ contract SupplyChain {
         ProductAttributes attrs;
         bool exists;
     }
-
+    // 用户信息
     struct User {
         address addr;
         UserRole role;
         bool isActive;
         uint256 time;
     }
-
+    // 创建商品参数
     struct CreateProductParams {
         ProductType pType; //商品种类
         uint256 orderNumber;//订单号
@@ -146,11 +147,12 @@ contract SupplyChain {
     // ================== 构造函数 ==================
     constructor() {
         owner = msg.sender;
-        isAdmin[owner] = true;
+        isAdmin[owner] = true; //将owner设置成admin
         emit AdminUpdated(owner, true);
     }
 
     // ================== 用户管理 ==================
+    // 用户注册
     function registerUser(UserRole role) external {
         require(!users[msg.sender].isActive, "User exists");
         require(role == UserRole.Buyer || role == UserRole.Seller, "Invalid role");
@@ -165,7 +167,7 @@ contract SupplyChain {
         
         emit UserRegistered(msg.sender, role);
     }
-
+    // admin移除用户
     function removeUser(address userAddr, UserRole role) external onlyAdmin {
         require(users[userAddr].isActive, "User not active");
         users[userAddr].isActive = false;
@@ -185,11 +187,12 @@ contract SupplyChain {
     }
 
     // ================== 商品管理 ==================
+    // 创建商品
     function createProduct(CreateProductParams calldata params) external onlySeller {
         require(!products[params.orderNumber].exists, "Product exists");
         require(bytes(params.path).length > 0, "Path cannot be empty");
         require(params.quantity > 0, "quantity is not");
-        
+        //给商品基础信息赋值
         ProductBase memory base = ProductBase({
             pType: params.pType,
             brand: params.brand,
@@ -201,8 +204,9 @@ contract SupplyChain {
             status: ProductStatus.NotSold,
             buyer: address(0)
         });
-
+        
         ProductAttributes memory attrs;
+        //根据商品类型,来给商品特殊信息赋值
         if (params.pType == ProductType.Clothing) {
             attrs.clothingSize = ClothingSize(params.size);
             attrs.color = params.color;
@@ -216,13 +220,13 @@ contract SupplyChain {
             attrs.foodExpiry = params.foodExpiry;
             attrs.productionDate = params.productionDate;
         }
-
+        // 商品信息汇总
         products[params.orderNumber] = Product({
             base: base,
             attrs: attrs,
             exists: true
         });
-         // 添加初始节点
+         // 添加初始路径节点
         logisticsPaths[params.orderNumber].push(LogisticsNode({
             timestamp: block.timestamp,
             path: params.path,
@@ -230,19 +234,19 @@ contract SupplyChain {
             addedBy: msg.sender,
             isBuyer: false
         }));
-
+        // 统计商品信息
         allProducts.add(params.orderNumber);
         sellerProducts[msg.sender].add(params.orderNumber);
 
         emit LogisticsAdded(params.orderNumber, NodeType.Initial); // 修改事件触发
         emit ProductCreated(params.orderNumber);
     }
-
+    // 伤处商品
     function deleteProduct(uint256 orderNumber) external onlyAdmin productExists(orderNumber) {
         _deleteProduct(orderNumber);
         emit ProductDeleted(orderNumber);
     }
-
+    // 执行删除商品方法
     function _deleteProduct(uint256 orderNumber) private {
         Product storage product = products[orderNumber];
         require(product.exists, "Product not exist");
@@ -258,6 +262,7 @@ contract SupplyChain {
     }
 
     // ================== 交易与物流 ==================
+    // 买家购买商品
     function buyProduct(uint256 orderNumber, string memory path) external onlyBuyer productExists(orderNumber) {
         Product storage product = products[orderNumber];
         require(product.base.status == ProductStatus.NotSold, "Already sold");
@@ -267,7 +272,7 @@ contract SupplyChain {
         product.base.buyer = msg.sender;
         product.base.status = ProductStatus.InTransit;
         buyerProducts[msg.sender].add(orderNumber);
-
+        // 更新购买后物流路径
          logisticsPaths[orderNumber].push(LogisticsNode({
             timestamp: block.timestamp,
             path: path,
@@ -280,7 +285,7 @@ contract SupplyChain {
         emit ProductPurchased(orderNumber, msg.sender);
         emit ProductStatusChanged(orderNumber, ProductStatus.InTransit);
     }
-
+    // admin添加路径
     function addLogisticsNode(
         uint256 orderNumber,
         string[] memory paths
@@ -310,27 +315,8 @@ contract SupplyChain {
         emit LogisticsAdded(orderNumber, NodeType.Intransit); 
     }
 
-    // 路径验证函数
-    function validateLogisticsPath(uint256 orderNumber) public view returns (bool) {
-        LogisticsNode[] storage path = logisticsPaths[orderNumber];
-        if (path.length < 2) return false;
-        
-        // 验证首尾节点类型
-        if (path[0].nodeType != NodeType.Intransit || 
-            path[path.length-1].nodeType != NodeType.Delivered) {
-            return false;
-        }
-
-        // 验证时间顺序
-        for (uint i = 1; i < path.length; i++) {
-            if (path[i].timestamp <= path[i-1].timestamp) return false;
-        }
-        
-        return true;
-    }
-
+    // 商品到达方法
     function markAsDelivered(uint256 orderNumber) external onlyAdmin productExists(orderNumber) {
-        // require(validateLogisticsPath(orderNumber), "Invalid logistics path");//模拟真实时间顺序，但前端展示效果会慢，因此先屏蔽，后续根据接入模拟
         Product storage product = products[orderNumber];
         require(product.base.status == ProductStatus.InTransit);
         
@@ -339,18 +325,19 @@ contract SupplyChain {
     }
 
     // ================== 管理员功能 ==================
+    // owner设置管理员
     function setAdmin(address newAdmin) external onlyOwner {
         require(!isAdmin[newAdmin], "Already admin");
         isAdmin[newAdmin] = true;
         emit AdminUpdated(newAdmin, true);
     }
-
+    // owner移除管理员
     function removeAdmin(address adminAddr) external onlyOwner {
         require(isAdmin[adminAddr], "Not admin");
         isAdmin[adminAddr] = false;
         emit AdminUpdated(adminAddr, false);
     }
-
+    // 将合约Owner转移
     function transferOwnership(address newOwner) external onlyOwner {
         require(newOwner != address(0), "Invalid address");
         owner = newOwner;
@@ -358,6 +345,7 @@ contract SupplyChain {
     }
 
     // ================== 查询接口 ==================
+    // 根据订单号查询商品所有信息
     function getProductFullInfo(uint256 orderNumber) external view productExists(orderNumber) returns (
         ProductBase memory base,
         ProductAttributes memory attrs,
@@ -366,7 +354,7 @@ contract SupplyChain {
         Product storage product = products[orderNumber];
         return (product.base, product.attrs, logisticsPaths[orderNumber]);
     }
-
+    // 查询食物是否过期
     function isFoodExpired(uint256 orderNumber) public view returns (bool) {
         Product storage product = products[orderNumber];
         require(product.base.pType == ProductType.Food, "Not food");
@@ -374,26 +362,27 @@ contract SupplyChain {
     }
 
     // 批量获取函数
+    // 获取所有商品订单号
     function getAllProducts() external view returns (uint256[] memory) {
         return allProducts.values();
     }
-
+    // 获取卖家下的商品
     function getSellerProducts(address seller) external view returns (uint256[] memory) {
         return sellerProducts[seller].values();
     }
-
+    // 获取买家商品
     function getBuyerProducts(address buyer) external view returns (uint256[] memory) {
         return buyerProducts[buyer].values();
     }
-
+    // 获取所有卖家
     function getAllSellers() external view returns (address[] memory) {
         return sellers.values();
     }
-
+    // 获取所有买家
     function getAllBuyers() external view returns (address[] memory) {
         return buyers.values();
     }
-
+    // 获取商品状态
     function getProductStatus(uint256 orderNumber) external view returns (uint) {
         return uint(products[orderNumber].base.status);
     }
